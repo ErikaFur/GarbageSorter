@@ -1,5 +1,6 @@
 import time
-
+import sys
+import math
 import cv2
 import os
 import shutil
@@ -96,6 +97,21 @@ def getResizePass(pathToModel, pathToImage, pathNewFolderImages, csvFilePath, cl
     numCls = int(out[0] + 1)
     log = logInfo(csvFilePath, filename, numCls, cls)
     print(f"Model predicted class {numCls}, which is a {cls}")
+    return numCls
+
+def robot_action(reference):
+    os.system("rosservice call set_joint_pos_ref '{joint_name: joint3, ref: 0.2}'")
+    time.sleep(2)
+    os.system("rosservice call set_joint_pos_ref '{joint_name: joint3, ref: -0.2}'")
+    time.sleep(1)
+    os.system("rosservice call set_joint_pos_ref '{joint_name: joint1, ref: " + f"{reference}".format(reference=reference) +"}'")
+    time.sleep(2)
+    os.system("rosservice call set_joint_pos_ref '{joint_name: joint3, ref: 0.2}'")
+    time.sleep(2)
+    os.system("rosservice call set_joint_pos_ref '{joint_name: joint3, ref: -0.2}'")
+    time.sleep(1)
+    os.system("rosservice call set_joint_pos_ref '{joint_name: joint1, ref: 0}'")
+    os.system("rosservice call set_joint_pos_ref '{joint_name: joint3, ref: 0}'")
 
 
 def main():
@@ -107,11 +123,32 @@ def main():
     imgNewPath = path + "sorted"  # folder with all sorted images
     csvPath = path + "logGarbage.csv"  # file for the logging
     classDecoder = {1: "paper/cardboard", 2: "metal", 3: "plastic", 4: "glass"}  # all classes
+    try:
+        while True:
+            # Check if directory exists
+            if os.path.isdir(imgPath):
+                # Check if there are any files in the directory
+                if os.listdir(imgPath):
+                    start = time.time()
+                    numCls = getResizePass(pathToModel, imgPath, imgNewPath, csvPath, classDecoder)
+                    end = time.time()
+                    print(f"Time of classification of an image is {end - start} seconds!")
+                    if numCls == 1:
+                        robot_action(-math.pi/4)
+                    elif numCls == 2:
+                        robot_action(math.pi/4)
+                    elif numCls == 3:
+                        robot_action(3*math.pi/4)
+                    elif numCls == 4:
+                        robot_action(-3*math.pi/4)
+                    else:
+                        print("Error: wrong class identification")
+                time.sleep(6)   
+            else:
+                print("Error: given directory doesn't exist")
+    except KeyboardInterrupt:
+        sys.exit()
 
-    start = time.time()
-    getResizePass(pathToModel, imgPath, imgNewPath, csvPath, classDecoder)
-    end = time.time()
-    print(f"Time of execution is {end - start} seconds!")
 
 
 main()
