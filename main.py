@@ -87,6 +87,7 @@ def logInfo(pathToCsv, imgName, predict, predictClass):
 def getResizePass(pathToModel, pathToImage, pathNewFolderImages, csvFilePath, classDecode):
     device = get_default_device()
     model = loadModel(pathToModel, device)
+    model.eval()
     img, filename = getImageFromFolderAndMove(pathToImage, pathNewFolderImages)
     resImg = convertImg(resizeImage(img, 256), device)
 
