@@ -118,7 +118,7 @@ def main():
     googlePath = "./drive/MyDrive/"
     localPath = "./processing/"
     path = localPath
-    pathToModel = path + "model/denceNetModel.pt"  # pretrained model. It takes RGB images with size 256x256
+    pathToModel = path + "model/denseNetModel.pt"  # pretrained model. It takes RGB images with size 256x256
     imgPath = path + "toSort"  # folder with all images to sort
     imgNewPath = path + "sorted"  # folder with all sorted images
     csvPath = path + "logGarbage.csv"  # file for the logging
